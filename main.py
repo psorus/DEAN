@@ -101,7 +101,7 @@ def train(dex):
         return m
     
     l=[dim for i in range(hyper["depth"])]
-    m=getmodel(l,reg=None,act="relu",mean=1.0,seed=seed)
+    m=getmodel(l,reg=None,act="relu",mean=1.0)
     
     cb=[keras.callbacks.EarlyStopping(monitor='val_loss',patience=5,restore_best_weights=True),
                        keras.callbacks.TerminateOnNaN()]
@@ -120,7 +120,7 @@ def train(dex):
     #predict the output of our datasets 
     pain=m.predict(train)
     p=m.predict(t)
-    w=model.predict(at)
+    w=m.predict(at)
    
     #average out the last dimension, to get one value for each samples 
     ppain=np.mean(pain,axis=-1)
