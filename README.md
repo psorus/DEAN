@@ -10,7 +10,9 @@
 
 
 
-------------------------------------------------------------------------------------
+
+
+
+
 Notice that this code does not include the autoencoder used in the original paper
 The current version of the original paper is given in DEAN.pdf
-------------------------------------------------------------------------------------
