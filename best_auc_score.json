@@ -1,23 +1,17 @@
 {
-    "score": 0.9572895144628099,
-    "evaluation_cost": 92.89403963088989,
+    "score": 0.9600658574380165,
+    "evaluation_cost": 137.16618132591248,
     "training_iteration": 0,
     "config": {
-        "index": 5,
-        "bag": 4,
-        "lr": 0.03583887124401591,
+        "bag": 12,
+        "lr": 0.32716037985277413,
         "depth": 1,
-        "batch": 276,
-        "rounds": 92,
-        "pwr": 0
+        "batch": 50
     },
-    "config/index": 5,
-    "config/bag": 4,
-    "config/lr": 0.03583887124401591,
+    "config/bag": 12,
+    "config/lr": 0.32716037985277413,
     "config/depth": 1,
-    "config/batch": 276,
-    "config/rounds": 92,
-    "config/pwr": 0,
+    "config/batch": 50,
     "experiment_tag": "exp",
-    "time_total_s": 92.89421701431274
+    "time_total_s": 137.1662895679474
 }
