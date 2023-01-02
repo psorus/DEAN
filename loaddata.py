@@ -1,10 +1,12 @@
 import numpy as np
 
-from tensorflow.keras.datasets.mnist import load_data as loaddata
+def loaddata():
+    f=np.load("/global/cardio.npz")
+    x = f['x']
+    a = (x.shape[0],) 
+    y = np.zeros(a)
 
-#def loaddata():
-#    f=np.load("/work/msimklue/pap/data.npz")
-#    return (f["train_x"],f["train_y"]),(f["test_x"],f["test_y"])
+    return (f["x"], y),(f["tx"],f["ty"])
 
 if __name__=="__main__":
     (x,y),(tx,ty)=loaddata()

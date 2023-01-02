@@ -1,0 +1,17 @@
+{
+    "score": 0.9636492768595042,
+    "evaluation_cost": 128.61017155647278,
+    "training_iteration": 0,
+    "config": {
+        "bag": 16,
+        "lr": 0.044759643919306376,
+        "depth": 1,
+        "batch": 76
+    },
+    "config/bag": 16,
+    "config/lr": 0.044759643919306376,
+    "config/depth": 1,
+    "config/batch": 76,
+    "experiment_tag": "exp",
+    "time_total_s": 128.61052012443542
+}

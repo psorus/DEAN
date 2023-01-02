@@ -1,38 +1,34 @@
 import sys
-#dex=0
 
-import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.backend as K
-from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, Flatten
+from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.models import Model
 from tensorflow.keras.losses import mse
-from tensorflow.keras.optimizers import Adam,SGD,RMSprop
+from tensorflow.keras.optimizers import Adam
 
 import numpy as np
-import matplotlib.pyplot as plt
 import json
-import time
 import os
 import shutil
 
-with open("hyper.json","r") as f:
-    hyper=json.loads(f.read())
 
-rounds=hyper["rounds"]#how many models to train
-index=hyper["dex"]#which y value should be considered normal
-dim=hyper["bag"]#which bagging size to choose for the feature bagging
+#with open("hyper.json","r") as f:
+    #hyper=json.loads(f.read())
+
+#rounds=hyper["rounds"]#how many models to train
+#index=hyper["dex"]#which y value should be considered normal
+#dim=hyper["bag"]#which bagging size to choose for the feature bagging
+#lr = hyper["lr"]
+#depth = hyper["depth"]
+#batch = hyper["batch"]
 
 
-#load data, and change the shape into (samples, features)
-from loaddata import loaddata    
-(x_train0, y_train), (x_test0, y_test) = loaddata()
-if len(x_train0.shape)>2:
-    x_train0=np.reshape(x_train0,(x_train0.shape[0],np.prod(x_train0.shape[1:])))
-    x_test0 =np.reshape(x_test0 ,(x_test0.shape[0],np.prod(x_test0.shape[1:])))
+
+
 
 #train one model (of index dex)
-def train(dex):
+def train(dex, index = 0, dim = 10, lr = 0.03, depth = 3, batch = 100):
     
     pth=f"results/{dex}/"
     
@@ -46,7 +42,15 @@ def train(dex):
     def statinf(q):
         return {"shape":q.shape,"mean":np.mean(q),"std":np.std(q),"min":np.min(q),"max":np.max(q)}
     
+    #load data, and change the shape into (samples, features)
+    from loaddata import loaddata    
+    (x_train0, y_train), (x_test0, y_test) = loaddata()
+    if len(x_train0.shape)>2:
+        x_train0=np.reshape(x_train0,(x_train0.shape[0],np.prod(x_train0.shape[1:])))
+        x_test0 =np.reshape(x_test0 ,(x_test0.shape[0],np.prod(x_test0.shape[1:])))
+
     
+
     x_train, x_test = x_train0.copy(), x_test0.copy()
 
 
@@ -97,10 +101,10 @@ def train(dex):
         loss=mse(w,zero)
         loss=K.mean(loss)
         m.add_loss(loss)
-        m.compile(Adam(lr=hyper["lr"]))
+        m.compile(Adam(lr= lr))
         return m
     
-    l=[dim for i in range(hyper["depth"])]
+    l=[dim for i in range(depth)]
     m=getmodel(l,reg=None,act="relu",mean=1.0)
     
     cb=[keras.callbacks.EarlyStopping(monitor='val_loss',patience=5,restore_best_weights=True),
@@ -112,7 +116,7 @@ def train(dex):
     #train the model    
     h=m.fit(train,None,
             epochs=500,
-            batch_size=hyper["batch"],
+            batch_size= batch,
             validation_split=0.25,
             verbose=1,
             callbacks=cb)
@@ -126,9 +130,6 @@ def train(dex):
     ppain=np.mean(pain,axis=-1)
     pp=np.mean(p,axis=-1)
     ww=np.mean(w,axis=-1)
-    
-
-    from sklearn.metrics import roc_auc_score as auc
    
     #calculate the mean prediction (q in the paper) 
     m=np.mean(ppain)
@@ -140,31 +141,33 @@ def train(dex):
     y_true=np.concatenate((np.zeros_like(pp),np.ones_like(ww)))
     
     #calculate auc score of a single model
-    auc_score=auc(y_true,y_score)
-    print(f"reached auc of {auc_score}")
+    #auc_score=auc(y_true,y_score)
+    #print(f"reached auc of {auc_score}")
     
     #and save the necessary results for merge.py to combine the submodel predictions into an ensemble
-    np.savez_compressed(f"{pth}/result.npz",y_true=y_true,y_score=y_score,to_use=to_use)
+    #np.savez_compressed(f"{pth}/result.npz",y_true=y_true,y_score=y_score,to_use=to_use)
+    
+    return y_true, y_score
     
     
-    
-    
-    
-if __name__ == "__main__":
-    #train many models
-    #this allows calling main.py with two arguments
-    #python3 main.py [first model index] [second model index]
-    i0=0
-    i1=rounds
-    if len(sys.argv)>1:
-        i0=int(sys.argv[1])
-        i1=i0+1
-    if len(sys.argv)>2:
-        i1=int(sys.argv[2])
 
-    for i in range(i0,i1):
-        train(i)
     
     
     
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+
+
+def DEAN(bag, lr, depth, batch):
+    y_scores = []
+    index = 0
+    pwr = 0
+    rounds = 100
+    for dex in range(0,rounds):
+        y_true, y_scor = train(dex, index = index, dim = bag, lr = lr, depth = depth, batch = batch)
+        y_scores.append(y_scor)
+
+
+    wids=[np.std(y_score[np.where(y_true==0)]) for y_score in y_scores]
+
+    y_score=np.sqrt(np.mean([(y_score/wid**pwr)**2 for y_score,wid in zip(y_scores,wids)],axis=0))
+
+    return y_true,y_score
